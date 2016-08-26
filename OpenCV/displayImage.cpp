@@ -8,7 +8,7 @@ using namespace std;
 void showImage(string &path, string &windowName) {
   // Read image file.
   Mat image = imread(path, CV_LOAD_IMAGE_COLOR);
-  cout << image.shape;
+  display(image);
 
   // Check for invalid input.
   if (!image.data) {
@@ -22,6 +22,23 @@ void showImage(string &path, string &windowName) {
   imshow(windowName, image);
   // Wait for a keystroke in the window.
   waitKey(0);
+}
+
+void display(Mat &image) {
+  int rows = image.rows;
+  int cols = image.cols;
+  cout << "["
+
+  for (int i = 0; i < rows; i++) {
+    cout << "[ "
+    for (int j = 0; j < cols; j++) {
+      if (j) cout << " ";
+      cout << image.data[i][j];
+    }
+    cout << " ]" << endl;
+  }
+
+  cout << "]" << endl;
 }
 
 int main(int argc, char const *argv[]) {
