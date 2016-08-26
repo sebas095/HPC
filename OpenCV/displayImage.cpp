@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -5,9 +6,34 @@
 using namespace cv;
 using namespace std;
 
-void showImage(string &path, string &windowName) {
+void display(Mat &image) {
+  Size s = image.size();
+  int rows = image.rows;
+  int cols = image.cols;
+  int width = s.width;
+  cout << "Matrix Image:" << endl;
+  cout << "[";
+
+  for (int i = 0; i < rows; i++) {
+    cout << "[ ";
+    for (int j = 0; j < cols; j++) {
+      if (j) cout << " ";
+      cout << (int)image.data[i * width + j];
+    }
+    cout << " ]" << endl;
+  }
+
+  cout << "]" << endl;
+}
+
+int showImage(string &path, string windowName) {
   // Read image file.
-  Mat image = imread(path, CV_LOAD_IMAGE_COLOR);
+  string root = "../img/";
+  char *dir = (char*)root.c_str();
+  char *img = (char*)path.c_str();
+
+  strcat(dir, img);
+  Mat image = imread(dir, CV_LOAD_IMAGE_COLOR);
   display(image);
 
   // Check for invalid input.
@@ -17,28 +43,11 @@ void showImage(string &path, string &windowName) {
   }
 
   // Create a window for display.
-  nameWindow(windowName, WINDOW_AUTOSIZE);
+  namedWindow(windowName.c_str(), WINDOW_AUTOSIZE);
   // Show our image inside it.
-  imshow(windowName, image);
+  imshow(windowName.c_str(), image);
   // Wait for a keystroke in the window.
   waitKey(0);
-}
-
-void display(Mat &image) {
-  int rows = image.rows;
-  int cols = image.cols;
-  cout << "["
-
-  for (int i = 0; i < rows; i++) {
-    cout << "[ "
-    for (int j = 0; j < cols; j++) {
-      if (j) cout << " ";
-      cout << image.data[i][j];
-    }
-    cout << " ]" << endl;
-  }
-
-  cout << "]" << endl;
 }
 
 int main(int argc, char const *argv[]) {
@@ -48,7 +57,8 @@ int main(int argc, char const *argv[]) {
   }
 
   string path(argv[1]);
-  showImage("../img/" + path, "Display Image");
+  string windowName("Display Image");
+  showImage(path, windowName);
 
   return 0;
 }
