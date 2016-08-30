@@ -27,12 +27,9 @@ void display(Mat &image) {
 
 int showImage(string &path, string windowName) {
   // Read image file.
-  string root = "../img/";
-  char *dir = (char*)root.c_str();
-  char *img = (char*)path.c_str();
+  string dir = "../img/" + path;
 
-  strcat(dir, img);
-  Mat image = imread(dir, CV_LOAD_IMAGE_COLOR);
+  Mat image = imread(dir.c_str(), CV_LOAD_IMAGE_COLOR);
   display(image);
 
   // Check for invalid input.
@@ -50,14 +47,18 @@ int showImage(string &path, string windowName) {
 }
 
 int main(int argc, char const *argv[]) {
-  if (argc != 2) {
-    cerr << "Usage: ./displayImage <Image_Path>" << endl;
-    return EXIT_FAILURE;
-  }
+  // if (argc != 2) {
+  //   cerr << "Usage: ./displayImage <Image_Path>" << endl;
+  //   return EXIT_FAILURE;
+  // }
+  //
+  // string path(argv[1]);
+  // string windowName("Display Image");
+  // showImage(path, windowName);
 
-  string path(argv[1]);
-  string windowName("Display Image");
-  showImage(path, windowName);
+  Mat image = imread("/inputs/img2.jpg", CV_LOAD_IMAGE_COLOR);
+  imwrite("./outputs/1112783873.png", image); 
+
 
   return 0;
 }
