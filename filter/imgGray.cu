@@ -135,7 +135,6 @@ int main() {
   cudaFree(d_imageOutput);
 
   free(grayImgCPU);
-  free(dataRawImage);
   free(h_imageOutput);
 
   return 0;
