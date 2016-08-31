@@ -68,10 +68,13 @@ int main() {
   int sizeGray = sizeof(unsigned char) * width * height;
 
   dataRawImage = (unsigned char*)malloc(size);
+  grayImgCPU = (unsigned char*)malloc(sizeGray);
+  h_imageOutput = (unsigned char*)malloc(sizeGray);
+
   error = cudaMalloc((void**)&d_dataRawImage, size);
   if (error != cudaSuccess) {
-    cerr << "Error reservando memoria para d_dataRawImage" << endl;
-    return EXIT_FAILURE;
+   cerr << "Error reservando memoria para d_dataRawImage" << endl;
+   return EXIT_FAILURE;
   }
 
   dataRawImage = image.data;
@@ -84,31 +87,34 @@ int main() {
 
   error = cudaMalloc((void**)&d_imageOutput, sizeGray);
   if (error != cudaSuccess) {
-    cerr << "Error reservando memoria para d_dataRawImage" << endl;
+    cerr << "Error reservando memoria para d_imageOutput" << endl;
     return EXIT_FAILURE;
   }
 
-  // int blockSize = 32;
-  // dim3 dimBlock(blockSize, blockSize, 1);
-  // dim3 dimGrid(ceil(width / float(blockSize)), ceil(height / float(blockSize)), 1);
-  // imgGrayGPU<<< dimGrid, dimBlock >>>(d_dataRawImage, d_imageOutput, width, height);
-  // cudaMemcpy(h_imageOutput, d_imageOutput, sizeGray, cudaMemcpyDeviceToHost);
-  // endGPU = clock();
-  //
-  // Mat grayImg;
-  // grayImg.create(height, width, CV_8UC1);
-  // grayImg.data = h_imageOutput;
+  int blockSize = 32;
+  dim3 dimBlock(blockSize, blockSize, 1);
+  dim3 dimGrid(ceil(width / float(blockSize)), ceil(height / float(blockSize)), 1);
+  imgGrayGPU<<< dimGrid, dimBlock >>>(d_dataRawImage, d_imageOutput, width, height);
+  cudaMemcpy(h_imageOutput, d_imageOutput, sizeGray, cudaMemcpyDeviceToHost);
+  endGPU = clock();
 
-  Mat grayImg2;
+  Mat grayImg;
+  grayImg.create(height, width, CV_8UC1);
+  grayImg.data = h_imageOutput;
+
   startCPU = clock();
-  imgGrayCPU(image.data, grayImgCPU, width, rows, cols);
+  Mat grayImg2;
+  imgGrayCPU(dataRawImage, grayImgCPU, width, rows, cols);
   grayImg2.create(height, width, CV_8UC1);
   grayImg2.data = grayImgCPU;
   endCPU = clock();
 
+  imwrite("../img/Gray_Image_CPU.jpg", grayImg2);
+  imwrite("../img/Gray_Image_GPU.jpg", grayImg);
+
   namedWindow("gatos.jpg", WINDOW_AUTOSIZE);
-  namedWindow("grayImgCPU", WINDOW_AUTOSIZE);
   namedWindow("grayImgGPU", WINDOW_AUTOSIZE);
+  namedWindow("grayImgCPU", WINDOW_AUTOSIZE);
 
   imshow("gatos.jpg", image);
   imshow("grayImgGPU", grayImg);
@@ -123,10 +129,10 @@ int main() {
 
   cpu_time_used = ((double)(endCPU - startCPU)) / CLOCKS_PER_SEC;
   cout << "Tiempo Algoritmo Secuencual: " << cpu_time_used << endl;
-  cout << "La aceleracion obtenida es de " << (cpu_time_used / gpu_time_used) << endl;
+  cout << "La aceleracion obtenida es de " << (cpu_time_used / gpu_time_used) << "X"<< endl;
 
-  // cudaFree(d_dataRawImage);
-  // cudaFree(d_imageOutput);
+  cudaFree(d_dataRawImage);
+  cudaFree(d_imageOutput);
 
   free(grayImgCPU);
   free(dataRawImage);
