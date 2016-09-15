@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project(matrixMult)
+find_package(CUDA REQUIRED)
+cuda_add_executable(matrixMult matrix_mult.cu)
+cuda_add_executable(matrixMultTiles matrix_mult_tiles.cu)
