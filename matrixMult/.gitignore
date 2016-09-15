@@ -1,0 +1,16 @@
+*.i
+*.ii
+*.gpu
+*.ptx
+*.cubin
+*.fatbin
+
+# Executables
+client
+server
+test
+*.exe
+*.out
+*.app
+
+build/

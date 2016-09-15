@@ -3,7 +3,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <time.h>
 
-#define BLUR_SIZE 100
+#define BLUR_SIZE 3
 
 using namespace cv;
 using namespace std;
