@@ -8,6 +8,7 @@ using namespace std;
 #define MASK_WIDTH 5
 #define WIDTH 7
 
+// Secuencial
 void convolution_1D(double *v, double *mask, double *result) {
 	for (int i = 0; i < WIDTH; i++) {
 		double Pvalue = 0;
@@ -35,7 +36,7 @@ void convolution_1D_kernel(double *v, double *mask, double *result) {
 }
 
 
-void print(double *v) {
+void printVector(double *v) {
 	cout << "[";
 	for (int i = 0; i < WIDTH; i++) {
 		if (i) cout << ", ";
@@ -65,8 +66,8 @@ int main() {
 		clock_t start = clock();
 
 		convolution_1D(h_v, h_mask, h_result);
-		print(h_v);
-		print(h_result);
+		printVector(h_v);
+		printVector(h_result);
 
 		clock_t end = clock();
 		double time_used = double(end - start) / CLOCKS_PER_SEC;
@@ -92,8 +93,8 @@ int main() {
 
 		convolution_1D_kernel<<< dimGrid, dimBlock >>>(d_v, d_mask, d_result);
 		cudaMemcpy(ans, d_result, sizeof(double) * WIDTH, cudaMemcpyDeviceToHost);
-		print(h_v);
-		print(ans);
+		printVector(h_v);
+		printVector(ans);
 
 		clock_t end = clock();
 		double time_used = double(end - start) / CLOCKS_PER_SEC;
