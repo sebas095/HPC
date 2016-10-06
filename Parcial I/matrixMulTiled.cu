@@ -2,7 +2,7 @@
 #include <ctime>
 #include <iostream>
 
-#define TILE_WIDTH 1
+#define TILE_WIDTH 32
 #define endl '\n'
 
 __global__
@@ -71,10 +71,9 @@ void mult(float *A, float *B, float *C, int width_A, int height_A, int width_B) 
 }
 
 void initValues(float *m, int width, int height) {
-  int values = 1;
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      m[i * width + j] = values++;
+      m[i * width + j] = 0;
     }
   }
 }
@@ -105,9 +104,9 @@ void print(float *m, int width, int height) {
 }
 
 int main() {
-  int height_A = 2;
-  int width_A = 4;
-  int width_B = 2;
+  int height_A = 100;
+  int width_A = 100;
+  int width_B = 70;
 
   float *A = new float[height_A * width_A];
   float *B = new float[width_A * width_B];
@@ -117,11 +116,8 @@ int main() {
   initValues(A, width_A, height_A);
   initValues(B, width_B, width_A);
 
-  print(A, width_A, height_A);
-  print(B, width_B, width_A);
-
   float *d_A, *d_B, *d_D;
-  int blocksize = 1;
+  int blocksize = 12;
 
   dim3 dimBlock(blocksize, blocksize, 1);
   dim3 dimGrid(ceil(width_B / float(blocksize)), ceil(height_A / float(blocksize)), 1);
@@ -139,7 +135,6 @@ int main() {
     double cpu_time_used = double(end - start) / CLOCKS_PER_SEC;
     std::cout << "Tiempo invertido CPU = " << cpu_time_used << "s\n";
     // print(C, width_B, height_A);
-
   }
 
   // Mult GPU without tiles
@@ -178,12 +173,12 @@ int main() {
 
   delete A;
   delete B;
-  delete C;
-  delete D;
+  // delete C;
+  // delete D;
 
-  cudaFree(d_A);
-  cudaFree(d_B);
-  cudaFree(d_D);
+  // cudaFree(d_A);
+  // cudaFree(d_B);
+  // cudaFree(d_D);
 
   return 0;
 }
