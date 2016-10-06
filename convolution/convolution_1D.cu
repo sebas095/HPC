@@ -76,7 +76,7 @@ int main() {
 
 	// Device variables
 	double *d_mask, *d_v, *d_result;
-  	int blockSize = 4;
+  int blockSize = 4;
 	dim3 dimBlock(blockSize, 1, 1);
 	dim3 dimGrid(ceil(WIDTH / float(blockSize)), 1, 1);
 
