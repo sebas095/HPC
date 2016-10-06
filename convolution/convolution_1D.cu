@@ -74,15 +74,15 @@ int main() {
 		cout << "Tiempo invertido CPU = " << setprecision(10) << time_used << "s" << endl << endl;
 	}
 
-  // Device variables
-  double *d_mask, *d_v, *d_result;
-	int blockSize = 4;
+	// Device variables
+	double *d_mask, *d_v, *d_result;
+  	int blockSize = 4;
 	dim3 dimBlock(blockSize, 1, 1);
 	dim3 dimGrid(ceil(WIDTH / float(blockSize)), 1, 1);
 
-  cudaMalloc(&d_mask, sizeof(double) * MASK_WIDTH);
-  cudaMalloc(&d_v, sizeof(double) * WIDTH);
-  cudaMalloc(&d_result, sizeof(double) * WIDTH);
+	cudaMalloc(&d_mask, sizeof(double) * MASK_WIDTH);
+	cudaMalloc(&d_v, sizeof(double) * WIDTH);
+	cudaMalloc(&d_result, sizeof(double) * WIDTH);
 
 	// Host
 	{
