@@ -52,7 +52,7 @@ void fillVector(double *v) {
 }
 
 int main() {
-  // Host variables
+	// Host variables
 	double h_mask[] = {3, 4, 5, 4, 3};
 	double *h_v = new double[WIDTH];
 	double *h_result = new double[WIDTH];
@@ -76,7 +76,7 @@ int main() {
 
 	// Device variables
 	double *d_mask, *d_v, *d_result;
-  int blockSize = 4;
+	int blockSize = 4;
 	dim3 dimBlock(blockSize, 1, 1);
 	dim3 dimGrid(ceil(WIDTH / float(blockSize)), 1, 1);
 
