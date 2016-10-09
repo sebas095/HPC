@@ -13,8 +13,8 @@ const int MASK_WIDTH = 3;
 const int MASK_HEIGHT = 3;
 
 __global__
-void sobelOperatorKernel(unsigned char *img, unsigned char *mask_x, unsigned char *mask_y,
-                       unsigned char *grad_x, unsigned char *grad_y, int height, int width) {
+void sobelFilterKernel(unsigned char *img, char *mask_x, char *mask_y, unsigned char *grad_x,
+                         unsigned char *grad_y,  unsigned char *grad, int height, int width) {
 
   int row = blockIdx.y * blockDim.y + threadIdx.y;
   int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -37,33 +37,41 @@ void sobelOperatorKernel(unsigned char *img, unsigned char *mask_x, unsigned cha
       }
     }
 
-    grad_x[width * row + col] = Px_value;
-    grad_y[width * row + col] = Py_value;
+    Px_value = (Px_value < 0) ? 0 : Px_value;
+    Px_value = (Px_value > 255) ? 255 : Px_value;
+
+    Py_value = (Py_value < 0) ? 0 : Py_value;
+    Py_value = (Py_value > 255) ? 255 : Py_value;
+
+    grad_x[width * row + col] = (unsigned char)Px_value;
+    grad_y[width * row + col] = (unsigned char)Py_value;
+    grad[width * row + col] = (unsigned char)sqrt((Px_value * Px_value) + (Py_value * Py_value));
   }
 }
 
-__global__
-void sobelFilterKernel(unsigned char *grad_x, unsigned char *grad_y, unsigned char *grad, int height, int width) {
-  int row = blockIdx.y * blockDim.y + threadIdx.y;
-  int col = blockIdx.x * blockDim.x + threadIdx.x;
-
-  if (row < height && col < width) {
-    unsigned char currGrad_x = grad_x[width * row + col];
-    unsigned char currGrad_y = grad_y[width * row + col];
-
-    // currGrad_x = (currGrad_x > 255) ? 255 : currGrad_x;
-    // currGrad_x = (currGrad_x < 0) ? 0 : currGrad_x;
-    //
-    // currGrad_y = (currGrad_y > 255) ? 255 : currGrad_y;
-    // currGrad_y = (currGrad_y < 0) ? 0 : currGrad_y;
-
-    double grad_value = sqrt(double(currGrad_x * currGrad_x) + double(currGrad_y * currGrad_y));
-    // double grad_value = fabs((double)currGrad_x) + fabs((double)currGrad_y);
-    // grad_value = (grad_value > 255) ? 255 : grad_value;
-    // grad_value = (grad_value < 0) ? 0 : grad_value;
-    grad[width * row + col] = (unsigned char)ceil(grad_value);
-  }
-}
+// __global__
+// void sobelFilterKernel(unsigned char *grad_x, unsigned char *grad_y, unsigned char *grad, int height, int width) {
+//   int row = blockIdx.y * blockDim.y + threadIdx.y;
+//   int col = blockIdx.x * blockDim.x + threadIdx.x;
+//
+//   if (row < height && col < width) {
+//     double Px_value = 0;
+//     double Py_value = 0;
+//
+//     for (int k = 0; k < width; k++) {
+//       unsigned char currRowGrad_x = grad_x[width * row + k];
+//       unsigned char currColGrad_x = grad_x[width * k + col];
+//       unsigned char currRowGrad_y = grad_y[width * row + k];
+//       unsigned char currColGrad_y = grad_y[width * k + col];
+//
+//       Px_value += currRowGrad_x * currColGrad_x;
+//       Py_value += currRowGrad_y * currColGrad_y;
+//     }
+//
+//     double grad_value = sqrt(Px_value + Py_value);
+//     grad[width * row + col] = (unsigned char)grad_value;
+//   }
+// }
 
 void sobelFilter(Mat &image, Mat &image_gray, Mat &grad) {
   int scale = 1;
@@ -85,16 +93,24 @@ void sobelFilter(Mat &image, Mat &image_gray, Mat &grad) {
   addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
 }
 
+void cudaCheckError(cudaError error, string error_msg) {
+	if(error != cudaSuccess){
+    cerr << error_msg << endl;
+    exit(-1);
+  }
+}
+
 int main() {
   cudaError_t error = cudaSuccess;
   clock_t startCPU, endCPU, startGPU, endGPU;
   double cpu_time_used, gpu_time_used;
-  unsigned char *d_grad_x, *d_grad_y, *h_grad, *d_grad;
-  unsigned char *d_mask_x, *d_mask_y;
+  unsigned char *d_grad_x, *d_grad_y, *d_grad;
+  unsigned char *h_grad, *h_grad_x, *h_grad_y;
+  char *d_mask_x, *d_mask_y;
   unsigned char *d_dataRawImage, *h_dataRawImage;
 
-  unsigned char h_mask_x[] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
-  unsigned char h_mask_y[] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
+  char h_mask_x[] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+  char h_mask_y[] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
 
   Mat image, image_gray, grad;
   image = imread("../img/gatos.jpg", CV_LOAD_IMAGE_COLOR);
@@ -113,87 +129,80 @@ int main() {
   int width = s.width;
   int height = s.height;
   int size = sizeof(unsigned char) * width * height;
-  int maskSize = sizeof(unsigned char) * MASK_WIDTH * MASK_HEIGHT;
+  int maskSize = sizeof(char) * MASK_WIDTH * MASK_HEIGHT;
+
   h_dataRawImage = new unsigned char[width * height];
   h_grad = new unsigned char[width * height];
+  h_grad_x = new unsigned char[width * height];
+  h_grad_y = new unsigned char[width * height];
 
   startGPU = clock();
   error = cudaMalloc(&d_mask_x, maskSize);
-  if (error != cudaSuccess) {
-    cerr << "Error reservando memoria para d_mask_x" << endl;
-    return EXIT_FAILURE;
-  }
+  cudaCheckError(error, "Error reservando memoria para d_mask_x");
 
   error = cudaMalloc(&d_mask_y, maskSize);
-  if (error != cudaSuccess) {
-    cerr << "Error reservando memoria para d_mask_y" << endl;
-    return EXIT_FAILURE;
-  }
+  cudaCheckError(error, "Error reservando memoria para d_mask_y");
 
   error = cudaMalloc(&d_grad_x, size);
-  if (error != cudaSuccess) {
-    cerr << "Error reservando memoria para d_grad_x" << endl;
-    return EXIT_FAILURE;
-  }
+  cudaCheckError(error, "Error reservando memoria para d_grad_x");
 
   error = cudaMalloc(&d_grad_y, size);
-  if (error != cudaSuccess) {
-    cerr << "Error reservando memoria para d_grad_y" << endl;
-    return EXIT_FAILURE;
-  }
+  cudaCheckError(error, "Error reservando memoria para d_grad_y");
 
   error = cudaMalloc(&d_grad, size);
-  if (error != cudaSuccess) {
-    cerr << "Error reservando memoria para d_grad" << endl;
-    return EXIT_FAILURE;
-  }
+  cudaCheckError(error, "Error reservando memoria para d_grad");
 
   error = cudaMalloc(&d_dataRawImage, size);
-  if (error != cudaSuccess) {
-    cerr << "Error reservando memoria para d_dataRawImage" << endl;
-    return EXIT_FAILURE;
-  }
+  cudaCheckError(error, "Error reservando memoria para d_dataRawImage");
 
   h_dataRawImage = image_gray.data;
   error = cudaMemcpy(d_dataRawImage, h_dataRawImage, size, cudaMemcpyHostToDevice);
-  if (error != cudaSuccess) {
-    cerr << "Error copiando los datos de h_dataRawImage a d_dataRawImage" << endl;
-    return EXIT_FAILURE;
-  }
+  cudaCheckError(error, "Error copiando los datos de h_dataRawImage a d_dataRawImage");
 
   error = cudaMemcpy(d_mask_x, h_mask_x, maskSize, cudaMemcpyHostToDevice);
-  if (error != cudaSuccess) {
-    cerr << "Error copiando los datos de h_mask_x a d_mask_x" << endl;
-    return EXIT_FAILURE;
-  }
+  cudaCheckError(error, "Error copiando los datos de h_dataRawImage a d_dataRawImage");
 
   error = cudaMemcpy(d_mask_y, h_mask_y, maskSize, cudaMemcpyHostToDevice);
-  if (error != cudaSuccess) {
-    cerr << "Error copiando los datos de h_mask_y a d_mask_y" << endl;
-    return EXIT_FAILURE;
-  }
+  cudaCheckError(error, "Error copiando los datos de h_mask_y a d_mask_y");
 
   // GPU
   int blockSize = 32;
   dim3 dimBlock(blockSize, blockSize, 1);
   dim3 dimGrid(ceil(width / float(blockSize)), ceil(height / float(blockSize)), 1);
-  sobelOperatorKernel<<< dimGrid, dimBlock >>>(d_dataRawImage, d_mask_x, d_mask_y, d_grad_x, d_grad_y, height, width);
-  cudaDeviceSynchronize();
-  sobelFilterKernel<<< dimGrid, dimBlock >>>(d_grad_x, d_grad_y, d_grad, height, width);
+  sobelFilterKernel<<< dimGrid, dimBlock >>>(d_dataRawImage, d_mask_x, d_mask_y, d_grad_x, d_grad_y, d_grad, height, width);
+  // cudaDeviceSynchronize();
+  // sobelFilterKernel<<< dimGrid, dimBlock >>>(d_grad_x, d_grad_y, d_grad, height, width);
+  cudaMemcpy(h_grad_x, d_grad_x, size, cudaMemcpyDeviceToHost);
+  cudaMemcpy(h_grad_y, d_grad_y, size, cudaMemcpyDeviceToHost);
   cudaMemcpy(h_grad, d_grad, size, cudaMemcpyDeviceToHost);
   endGPU = clock();
 
-  Mat sobelImg;
+  Mat sobelImg, sobelImg_x, sobelImg_y;
+
   sobelImg.create(height, width, CV_8UC1);
+  sobelImg_x.create(height, width, CV_8UC1);
+  sobelImg_y.create(height, width, CV_8UC1);
+
   sobelImg.data = h_grad;
+  sobelImg_x.data = h_grad_x;
+  sobelImg_y.data = h_grad_y;
 
-  // namedWindow("gatos.jpg", WINDOW_AUTOSIZE);
-  // namedWindow("SobelFilterCPU", WINDOW_AUTOSIZE);
+  // imwrite("../img/outputs/gatos_cpu_SF.png", grad);
+  // imwrite("../img/outputs/gatos_gpu_SF_x.png", sobelImg_x);
+  // imwrite("../img/outputs/gatos_gpu_SF_y.png", sobelImg_y);
+  // imwrite("../img/outputs/gatos_gpu_SF.png", sobelImg);
+
+  namedWindow("gatos.jpg", WINDOW_AUTOSIZE);
+  namedWindow("SobelFilterCPU", WINDOW_AUTOSIZE);
   namedWindow("SobelFilterGPU", WINDOW_AUTOSIZE);
+  namedWindow("SobelFilterGPU_x", WINDOW_AUTOSIZE);
+  namedWindow("SobelFilterGPU_y", WINDOW_AUTOSIZE);
 
-  // imshow("gatos.jpg", image);
-  // imshow("SobelFilterCPU", grad);
+  imshow("gatos.jpg", image);
+  imshow("SobelFilterCPU", grad);
   imshow("SobelFilterGPU", sobelImg);
+  imshow("SobelFilterGPU_x", sobelImg_x);
+  imshow("SobelFilterGPU_y", sobelImg_y);
 
   waitKey(0);
 
@@ -208,6 +217,8 @@ int main() {
   cout << "La aceleracion obtenida es de: " << (cpu_time_used / gpu_time_used )<< "X" << endl;
 
   free(h_grad);
+  free(h_grad_x);
+  free(h_grad_y);
 
   cudaFree(d_dataRawImage);
   cudaFree(d_mask_x);
