@@ -100,6 +100,7 @@ int main() {
   // Reading image with OpenCV
   Mat image, image_gray, grad;
   image = imread("../img/gatos.jpg", CV_LOAD_IMAGE_COLOR);
+  // image = imread("./inputs/img4.jpg", CV_LOAD_IMAGE_COLOR);
 
   if (!image.data) {
     cerr << "No image data" << endl;
@@ -176,6 +177,7 @@ int main() {
   // imwrite("../img/outputs/gatos_gpu_SF_x.png", sobelImg_x);
   // imwrite("../img/outputs/gatos_gpu_SF_y.png", sobelImg_y);
   // imwrite("../img/outputs/gatos_gpu_SF.png", sobelImg);
+  // imwrite("./outputs/1112783873.png", sobelImg);
 
   namedWindow("gatos.jpg", WINDOW_AUTOSIZE);
   namedWindow("SobelFilterCPU", WINDOW_AUTOSIZE);
