@@ -50,8 +50,8 @@ void sobelFilterKernel(unsigned char *img, unsigned char *grad_x,unsigned char *
     Px_value = check(Px_value);
     Py_value = check(Py_value);
 
-    grad_x[width * row + col] = (unsigned char)Px_value;
-    grad_y[width * row + col] = (unsigned char)Py_value;
+    grad_x[width * row + col] = Px_value;
+    grad_y[width * row + col] = Py_value;
     grad[width * row + col] = (unsigned char)sqrtf((Px_value * Px_value) + (Py_value * Py_value));
   }
 }
