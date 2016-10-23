@@ -5,7 +5,7 @@ all: hello addVector
 hello: hello.cpp
 	$(CC) -o hello hello.cpp -fopenmp
 
-hello: addVector.cpp
+addVector: addVector.cpp
 	$(CC) -o addVector addVector.cpp -fopenmp
 
 clean:

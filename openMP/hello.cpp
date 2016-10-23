@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <omp.h>
@@ -9,11 +10,11 @@ int main() {
 #pragma omp parallel private(nthreads, tid)
   {
     tid = omp_get_thread_num();
-    cout << "Hello World from thread = " << tid << endl;
+    printf("Hello World from thread = %d\n", tid);
 
     if (tid == 0) {
       nthreads = omp_get_num_threads();
-      cout << "Number of threads = " << nthreads << endl;
+      printf("Number of threads = %d\n", nthreads);
     }
   }
   return 0;
