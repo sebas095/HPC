@@ -1,7 +1,4 @@
-#!/bin/sh
-
+#!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --job-name=hello.out
-
-export OMP_NUM_THREADS=10
-./hello
+export OMP_NUM_THREADS=16
+./omp_hello -fopenmp
