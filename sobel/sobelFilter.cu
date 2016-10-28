@@ -99,7 +99,7 @@ int main() {
 
   // Reading image with OpenCV
   Mat image, image_gray, grad;
-  image = imread("../img/gatos.jpg", CV_LOAD_IMAGE_COLOR);
+  image = imread("./img/gatos.jpg", CV_LOAD_IMAGE_COLOR);
   // image = imread("./inputs/img4.jpg", CV_LOAD_IMAGE_COLOR);
 
   if (!image.data) {
@@ -177,9 +177,9 @@ int main() {
   // imwrite("../img/outputs/gatos_gpu_SF_x.png", sobelImg_x);
   // imwrite("../img/outputs/gatos_gpu_SF_y.png", sobelImg_y);
   // imwrite("../img/outputs/gatos_gpu_SF.png", sobelImg);
-  // imwrite("./outputs/1112783873.png", sobelImg);
+  imwrite("./img/outputs/1112783873.png", sobelImg);
 
-  namedWindow("gatos.jpg", WINDOW_AUTOSIZE);
+  /*namedWindow("gatos.jpg", WINDOW_AUTOSIZE);
   namedWindow("SobelFilterCPU", WINDOW_AUTOSIZE);
   namedWindow("SobelFilterGPU", WINDOW_AUTOSIZE);
   namedWindow("SobelFilterGPU_x", WINDOW_AUTOSIZE);
@@ -190,7 +190,7 @@ int main() {
   imshow("SobelFilterGPU", sobelImg);
   imshow("SobelFilterGPU_x", sobelImg_x);
   imshow("SobelFilterGPU_y", sobelImg_y);
-
+*/
   waitKey(0);
 
   cout << fixed;

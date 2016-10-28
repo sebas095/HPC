@@ -50,7 +50,7 @@ int main() {
   double cpu_time_used, gpu_time_used;
 
   Mat image;
-  image = imread("../img/gatos2.jpg", CV_LOAD_IMAGE_COLOR);
+  image = imread("./img/gatos2.jpg", CV_LOAD_IMAGE_COLOR);
 
   if (!image.data) {
     cerr << "No image data" << endl;
@@ -109,10 +109,10 @@ int main() {
   grayImg2.data = grayImgCPU;
   endCPU = clock();
 
-  imwrite("../img/Gray_Image_CPU.jpg", grayImg2);
-  imwrite("../img/Gray_Image_GPU.jpg", grayImg);
+  imwrite("./img/Gray_Image_CPU.jpg", grayImg2);
+  imwrite("./img/Gray_Image_GPU.jpg", grayImg);
 
-  namedWindow("gatos.jpg", WINDOW_AUTOSIZE);
+/*  namedWindow("gatos.jpg", WINDOW_AUTOSIZE);
   namedWindow("grayImgGPU", WINDOW_AUTOSIZE);
   namedWindow("grayImgCPU", WINDOW_AUTOSIZE);
 
@@ -120,7 +120,7 @@ int main() {
   imshow("grayImgGPU", grayImg);
   imshow("grayImgCPU", grayImg2);
   waitKey(0);
-
+*/
   cout << fixed;
   cout.precision(10);
 
