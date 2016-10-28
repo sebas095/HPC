@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=mpi_hello_world
+#SBATCH --job-name=helloWorld
 #SBATCH --output=res_mpi_helloWorld.out
 #SBATCH --ntasks=4
 #SBATCH --time=10:00
