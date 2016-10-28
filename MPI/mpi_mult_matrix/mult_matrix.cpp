@@ -101,6 +101,7 @@ int main() {
 
     for (k = 0; k < NCB; k++) {
       for (i = 0; i < rows; i++) {
+        c[i][k] = 0.0;
         for (j = 0; j < NCA; j++) {
           c[i][k] += a[i][k] * b[k][j];
         }
