@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(sobelFilter)
+set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 find_package(OpenCV REQUIRED)
 find_package(CUDA REQUIRED)
 cuda_add_executable(sobelFilter sobelFilter.cu)
+include_directories(${OpenCV_INCLUDE_DIRS})
 target_link_libraries(sobelFilter ${OpenCV_LIBS})
