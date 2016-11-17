@@ -6,4 +6,4 @@
 #SBATCH --ntasks-per-node 8
 #sbatch --gres=gpu:1
 
-mpirun mult_matrix
+mpirun ./build/mult_matrix
