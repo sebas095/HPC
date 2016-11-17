@@ -23,3 +23,10 @@ repositorio tendrá un peso de 10%
 indica la claridad en la explicación, el conocimiento de los comandos básicos para
 ejecutar programas a través de slurm y la comprensión en los procesos de compilaciónConstruir una aplicación que realice la multiplicación de matrices de gran tamaño
 utilizando MPI​ y CUDA.​
+
+## Comandos
+``` bash
+/usr/local/cuda/bin/nvcc matmult.cu -c matmult.o
+mpic++ -c matmult_MPI.cpp -o matmult_MPI.o
+mpic++ matmult.o matmult_MPI.o -o matmult -L/usr/local/cuda/lib64/ -lcudar
+```
