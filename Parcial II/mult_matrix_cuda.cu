@@ -28,7 +28,7 @@ void mult_mat_CUDA(double *h_a, double *h_b, double *h_c, int height, int width_
   cudaMemcpy(d_b, h_b, width_a * width_b * sizeof(double), cudaMemcpyHostToDevice);
 
   dim3 dimBlock(blocksize, blocksize, 1);
-  dim3 dimGrid((height / blocksize) + 1, (width_b / blocksize) + 1);
+  dim3 dimGrid((width_b / blocksize) + 1, (height / blocksize) + 1, 1);
 
   mult_mat<<< dimGrid, dimBlock >>>(d_a, d_b, d_c, height, width_a, width_b);
   cudaMemcpy(h_c, d_c, height * width_b * sizeof(double), cudaMemcpyDeviceToHost);

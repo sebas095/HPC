@@ -8,19 +8,16 @@ using namespace std;
 void mult_mat_CUDA(double *h_a, double *h_b, double *h_c, int height,
                    int width_a, int width_b);
 
-#define NRA 3         // number of rows in matrix A
-#define NCA 3         // number of columns in matrix A
-#define NCB 2         // number of columns in matrix B
+#define NRA 19000       // number of rows in matrix A
+#define NCA 19000         // number of columns in matrix A
+#define NCB 19000         // number of columns in matrix B
 #define MASTER 0      // taskid of first task
 #define FROM_MASTER 1 // setting a message type
 #define FROM_WORKER 2 // setting a message type
 
-void init(double *mat, int h, int w) {
-  double n = 1;
-  for (int i = 0; i < h; i++) {
-    for (int j = 0; j < w; j++) {
-      mat[i * w + j] = n++;
-    }
+void init(double *mat, int h, int w, double n = 0) {
+  for (int i = 0; i < w * h; i++) {
+    mat[i] = n;
   }
 }
 
@@ -43,6 +40,16 @@ bool compare(double *mat_MPI, double *mat_CUDA, int h, int w) {
   return true;
 }
 
+bool compareTo(double *mat_CUDA, int h, int w) {
+  for (int i = 0; i < h; i++) {
+    for (int j = 0; j < w; j++) {
+      if (mat_CUDA[i * w + j] != NCA)
+        return false;
+    }
+  }
+  return true;
+}
+
 // Mult in MPI
 void MPI_Multiply(double *a, double *b, double *c, int rows, int h, int w) {
   for (int j = 0; j < w; j++) {
@@ -59,7 +66,7 @@ int main(int argc, char *argv[]) {
   int averow, extra, offset, i, j, k, rc;
   MPI_Status mpi_status;
 
-  MPI_Init(NULL, NULL);                    // starts MPI
+  MPI_Init(&argc, &argv);                    // starts MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &taskid);  // get current process id
   MPI_Comm_size(MPI_COMM_WORLD, &numtask); // get number of processes
 
@@ -80,8 +87,10 @@ int main(int argc, char *argv[]) {
 
     cout << "mpi_mult_matrix has started with " << numtask << " tasks." << endl;
     cout << "Initializing arrays..." << endl;
-    init(a, NRA, NCA);
-    init(b, NCA, NCB);
+    init(a, NRA, NCA, 1);
+    init(b, NCA, NCB, 1);
+    init(c_MPI, NRA, NCB);
+    init(c_CUDA, NRA, NCB);
     // print(a, NRA, NCA);
     // print(b, NCA, NCB);
 
@@ -118,7 +127,7 @@ int main(int argc, char *argv[]) {
 
     // Print results
     cout << "******************************************************" << endl;
-    for (i = 0; i < NRA; i++) {
+    /*for (i = 0; i < NRA; i++) {
       cout << endl;
       for (j = 0; j < NCB; j++) {
        cout << fixed << setprecision(2) << c_MPI[i * NCB + j] << "   ";
@@ -132,9 +141,9 @@ int main(int argc, char *argv[]) {
        cout << fixed << setprecision(2) << c_CUDA[i * NCB + j] << "   ";
      }
     }
-    
-    cout << endl;
-    if (compare(c_MPI, c_CUDA, NRA, NCB)) {
+   
+    cout << endl;*/
+    if (compareTo(c_CUDA, NRA, NCB)) {
       cout << "Buen calculo!, las matrices son iguales 😄" << endl;
     } else {
       cout << "Mal calculo!, las matrices son diferentes 😱" << endl;
@@ -165,7 +174,7 @@ int main(int argc, char *argv[]) {
              &mpi_status);
 
     // Only CPU
-    MPI_Multiply(a, b, c_MPI, rows, NCA, NCB);
+    //MPI_Multiply(a, b, c_MPI, rows, NCA, NCB);
     // Version with CUDA
     mult_mat_CUDA(a, b, c_CUDA, rows, NCA, NCB);
 
