@@ -118,12 +118,22 @@ int main(int argc, char *argv[]) {
 
     // Print results
     cout << "******************************************************" << endl;
-    // for (i = 0; i < NRA; i++) {
-    //   cout << endl;
-    //   for (j = 0; j < NCB; j++) {
-    //     cout << fixed << setprecision(2) << c_MPI[i * NCB + j] << "   ";
-    //   }
-    // }
+    for (i = 0; i < NRA; i++) {
+      cout << endl;
+      for (j = 0; j < NCB; j++) {
+       cout << fixed << setprecision(2) << c_MPI[i * NCB + j] << "   ";
+     }
+    }
+    cout << endl << endl;
+
+    for (i = 0; i < NRA; i++) {
+      cout << endl;
+      for (j = 0; j < NCB; j++) {
+       cout << fixed << setprecision(2) << c_CUDA[i * NCB + j] << "   ";
+     }
+    }
+    
+    cout << endl;
     if (compare(c_MPI, c_CUDA, NRA, NCB)) {
       cout << "Buen calculo!, las matrices son iguales 😄" << endl;
     } else {
