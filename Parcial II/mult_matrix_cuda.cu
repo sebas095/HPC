@@ -16,7 +16,7 @@ void mult_mat(double *d_a, double *d_b, double *d_c, int height, int width_a, in
 }
 
 void mult_mat_CUDA(double *h_a, double *h_b, double *h_c, int height, int width_a, int width_b) {
-  int blocksize = 32;
+  double blocksize = 32;
   double *d_a, *d_b, *d_c;
 
   // Asign memory in the device
@@ -28,7 +28,7 @@ void mult_mat_CUDA(double *h_a, double *h_b, double *h_c, int height, int width_
   cudaMemcpy(d_b, h_b, width_a * width_b * sizeof(double), cudaMemcpyHostToDevice);
 
   dim3 dimBlock(blocksize, blocksize, 1);
-  dim3 dimGrid((width_b / blocksize) + 1, (height / blocksize) + 1, 1);
+  dim3 dimGrid(ceil(width_b / blocksize), ceil(height / blocksize), 1);
 
   mult_mat<<< dimGrid, dimBlock >>>(d_a, d_b, d_c, height, width_a, width_b);
   cudaMemcpy(h_c, d_c, height * width_b * sizeof(double), cudaMemcpyDeviceToHost);

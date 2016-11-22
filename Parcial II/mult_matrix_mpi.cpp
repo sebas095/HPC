@@ -8,9 +8,9 @@ using namespace std;
 void mult_mat_CUDA(double *h_a, double *h_b, double *h_c, int height,
                    int width_a, int width_b);
 
-#define NRA 19000       // number of rows in matrix A
-#define NCA 19000         // number of columns in matrix A
-#define NCB 19000         // number of columns in matrix B
+#define NRA 10000       // number of rows in matrix A
+#define NCA 10000         // number of columns in matrix A
+#define NCB 10000         // number of columns in matrix B
 #define MASTER 0      // taskid of first task
 #define FROM_MASTER 1 // setting a message type
 #define FROM_WORKER 2 // setting a message type
