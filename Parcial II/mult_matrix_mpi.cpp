@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -8,9 +9,9 @@ using namespace std;
 void mult_mat_CUDA(double *h_a, double *h_b, double *h_c, int height,
                    int width_a, int width_b);
 
-#define NRA 10000       // number of rows in matrix A
-#define NCA 10000         // number of columns in matrix A
-#define NCB 10000         // number of columns in matrix B
+#define NRA 10000     // number of rows in matrix A
+#define NCA 10000     // number of columns in matrix A
+#define NCB 10000     // number of columns in matrix B
 #define MASTER 0      // taskid of first task
 #define FROM_MASTER 1 // setting a message type
 #define FROM_WORKER 2 // setting a message type
@@ -66,7 +67,7 @@ int main(int argc, char *argv[]) {
   int averow, extra, offset, i, j, k, rc;
   MPI_Status mpi_status;
 
-  MPI_Init(&argc, &argv);                    // starts MPI
+  MPI_Init(&argc, &argv);                  // starts MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &taskid);  // get current process id
   MPI_Comm_size(MPI_COMM_WORLD, &numtask); // get number of processes
 
@@ -100,6 +101,8 @@ int main(int argc, char *argv[]) {
     offset = 0;
     mtype = FROM_MASTER;
 
+    auto start = chrono::high_resolution_clock::now();
+
     for (dest = 1; dest <= numworkers; dest++) {
       rows = (dest <= extra) ? averow + 1 : averow;
       cout << "Sending " << rows << " to task " << dest
@@ -125,8 +128,11 @@ int main(int argc, char *argv[]) {
       cout << "Received results from task " << source << endl;
     }
 
+    auto end = chrono::high_resolution_clock::now();
+    auto elapsed = chrono::duration_cast<chrono::duration<double>>(end - start);
     // Print results
     cout << "******************************************************" << endl;
+    cout << "Elapsed time: " << elapsed.count() << "s" << endl;
     /*for (i = 0; i < NRA; i++) {
       cout << endl;
       for (j = 0; j < NCB; j++) {
@@ -141,7 +147,7 @@ int main(int argc, char *argv[]) {
        cout << fixed << setprecision(2) << c_CUDA[i * NCB + j] << "   ";
      }
     }
-   
+
     cout << endl;*/
     if (compareTo(c_CUDA, NRA, NCB)) {
       cout << "Buen calculo!, las matrices son iguales 😄" << endl;
@@ -174,7 +180,7 @@ int main(int argc, char *argv[]) {
              &mpi_status);
 
     // Only CPU
-    //MPI_Multiply(a, b, c_MPI, rows, NCA, NCB);
+    // MPI_Multiply(a, b, c_MPI, rows, NCA, NCB);
     // Version with CUDA
     mult_mat_CUDA(a, b, c_CUDA, rows, NCA, NCB);
 
