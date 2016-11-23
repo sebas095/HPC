@@ -19,6 +19,7 @@ Para el desarrollo de esta implementación se hizo uso de varias tecnologías en
 
 ## Entorno de ejecución
 El entorno de ejecución es un cluster el cual tiene un nodo maestro y 6 nodos trabajadores a su disposición. Los nodos maestros poseen las siguientes características:
+
 | Nombre            | Descripción                              |
 |-------------------|------------------------------------------|
 | Sistema Operativo | Ubuntu 16.04.1 LTS                       |
