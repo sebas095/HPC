@@ -21,12 +21,20 @@ lo indique y con ánimo de verificar que la multiplicación es correcta. (10%​
 repositorio tendrá un peso de 10%
 10. La entrega se hará de forma individual y tendrá un peso en la evaluación del 50%. ​Esto
 indica la claridad en la explicación, el conocimiento de los comandos básicos para
-ejecutar programas a través de slurm y la comprensión en los procesos de compilaciónConstruir una aplicación que realice la multiplicación de matrices de gran tamaño
-utilizando MPI​ y CUDA.​
+ejecutar programas a través de slurm y la comprensión en los procesos de compilación.
 
 ## Comandos
+* Forma tradicional
 ``` bash
 /usr/local/cuda/bin/nvcc matmult.cu -c matmult.o
 mpic++ -c matmult_MPI.cpp -o matmult_MPI.o
 mpic++ matmult.o matmult_MPI.o -o matmult -L/usr/local/cuda/lib64/ -lcudar
+```
+
+* Con cmake
+``` bash
+mkdir build
+cd build
+cmake ..
+make
 ```
